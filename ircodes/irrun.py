@@ -11,7 +11,7 @@ from hotpotQAModel.RetrievalModel import LongformerRetrievalModel, LongformerDoc
 from pytorch_lightning import loggers as pl_loggers
 import logging
 import torch
-from codes.gpu_utils import gpu_setting
+from modelUtils.gpu_utils import gpu_setting
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def trainer_builder(args):
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

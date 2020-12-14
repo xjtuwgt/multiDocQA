@@ -31,7 +31,7 @@ def configure_optimizers(model, args):
     }
     return [optimizer], [scheduler]
 
-def training_qa_warm_up(model, optimizer, train_dataloader, dev_dataloader, args):
+def training_ir_warm_up(model, optimizer, train_dataloader, dev_dataloader, args):
     warm_up_steps = args.warm_up_steps
     start_time = time()
     step = 0
@@ -70,10 +70,10 @@ def training_qa_warm_up(model, optimizer, train_dataloader, dev_dataloader, args
             log_metrics('Valid', value)
         logging.info('*' * 75)
 
-def training_epoch_qa(model, optimizer, scheduler, train_dataloader, dev_dataloader, args):
+def training_epoch_ir(model, optimizer, scheduler, train_dataloader, dev_dataloader, args):
     warm_up_steps = args.warm_up_steps
     if warm_up_steps > 0:
-        training_qa_warm_up(model=model, optimizer=optimizer, train_dataloader=train_dataloader, dev_dataloader=dev_dataloader, args=args)
+        training_ir_warm_up(model=model, optimizer=optimizer, train_dataloader=train_dataloader, dev_dataloader=dev_dataloader, args=args)
         logging.info('*' * 75)
         current_learning_rate = optimizer.param_groups[-1]['lr']
         learning_rate = current_learning_rate * 0.5
@@ -127,7 +127,7 @@ def training_epoch_qa(model, optimizer, scheduler, train_dataloader, dev_dataloa
                 logging.info('*' * 75)
     return min_valid_loss
 
-def train_step_qa(model, batch, optimizer, args):
+def train_step_ir(model, batch, optimizer, args):
     model.train()
     model.zero_grad()
     optimizer.zero_grad()
@@ -150,7 +150,7 @@ def train_step_qa(model, batch, optimizer, args):
     }
     return log
 
-def validation_epoch_qa(model, test_data_loader, args):
+def validation_epoch_ir(model, test_data_loader, args):
     model.eval()
     total_steps = len(test_data_loader)
     start_time = time()
@@ -176,7 +176,7 @@ def validation_epoch_qa(model, test_data_loader, args):
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     return {'valid_loss': avg_loss, 'doc_metric': doc_metrics, 'topk_metric': topk_metrics}
 
-def validation_step_qa(model, batch, args):
+def validation_step_ir(model, batch, args):
     if args.cuda:
         sample = dict()
         for key, value in batch.items():
@@ -197,3 +197,4 @@ def validation_step_qa(model, batch, args):
     output = {'valid_loss': loss.mean().detach().item(), 'doc_metric': doc_metric_logs, 'topk_metric': topk_metric_logs}
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     return output
+

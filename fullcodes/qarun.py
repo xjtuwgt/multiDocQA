@@ -3,11 +3,11 @@ import sys
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-from randcodes.randhyperparaSettings import parse_args
+from fullcodes.hyperparaSettings import parse_args
 from dataUtils.ioutils import create_dir_if_not_exist, set_logger
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
-from hotpotQAModel.RandQAModel import LongformerRandHotPotQAModel
+from hotpotQAModel.FullQAModel import LongformerHotPotQAModel
 from pytorch_lightning import loggers as pl_loggers
 import logging
 import torch
@@ -51,6 +51,7 @@ def logger_builder(args):
     if args.log_path is not None:
         create_dir_if_not_exist(save_path=args.log_path, sub_folder=args.log_name)
     set_logger(args=args)
+    logging.info('Logging have been set')
     if torch.cuda.is_available():
         if args.gpus > 0:
             free_gpu_ids, used_memory = gpu_setting(num_gpu=args.gpus)
@@ -86,7 +87,7 @@ def main(args):
     args.checkpoint_path = abs_checkpoint_path
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     logging.info('Building HotPotQA reasoning module...')
-    hotpotQA_model = LongformerRandHotPotQAModel(args=args)
+    hotpotQA_model = LongformerHotPotQAModel(args=args)
     logging.info('Building reasoning module completed')
     hotpotQA_model.prepare_data()
     hotpotQA_model.setup(stage='fit')

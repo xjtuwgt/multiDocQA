@@ -4,6 +4,8 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 import os
+import json
+import torch
 import pandas as pd
 from pandas import DataFrame
 from time import time
@@ -100,4 +102,46 @@ def set_logger(args):
     formatter = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s')
     console.setFormatter(formatter)
     logging.getLogger('').addHandler(console)
+
+
+def save_check_point(model, optimizer, loss, step, args):
+    argparse_dict = vars(args)
+    with open(os.path.join(args.save_path, 'config.json'), 'w') as fjson: ## saving model parameters
+        json.dump(argparse_dict, fjson)
+    model_to_save = model
+    save_path = os.path.join(args.save_path, str(step) + '_' + str(loss) + '.pt')
+    if isinstance(model, torch.nn.DataParallel):
+        model_to_save = model.module
+    if isinstance(model, torch.nn.parallel.DistributedDataParallel):
+        model_to_save = model.module
+    torch.save({
+        'step': step,
+        'model_state_dict': model_to_save.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'loss': loss
+    }, save_path)
+    return save_path
+
+
+def load_check_point_for_train(model, optimizer, PATH: str):
+    if not torch.cuda.is_available():
+        device = torch.device("cpu")
+        checkpoint = torch.load(PATH, device)
+    else:
+        checkpoint = torch.load(PATH)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    step = checkpoint['step']
+    loss = checkpoint['loss']
+    return model, optimizer, step, loss
+
+def load_model(model, PATH: str):
+    if not torch.cuda.is_available():
+        device = torch.device("cpu")
+        checkpoint = torch.load(PATH, device)
+    else:
+        checkpoint = torch.load(PATH)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    return model
+
 
