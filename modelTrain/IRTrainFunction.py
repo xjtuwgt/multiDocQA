@@ -125,7 +125,23 @@ def training_epoch_ir(model, optimizer, scheduler, train_dataloader, dev_dataloa
                         logging.info('{} prediction at step {}'.format(key, step))
                         log_metrics('Valid', value)
                 logging.info('*' * 75)
-    return min_valid_loss
+    ############################################
+    logging.info('*' * 75)
+    logging.info('Evaluating on Valid Dataset...')
+    metric_dict = validation_epoch_ir(model=model, test_data_loader=dev_dataloader, args=args)
+    logging.info('*' * 75)
+    final_valid_loss = metric_dict['valid_loss']
+    logging.info('Current valid loss: {}'.format(final_valid_loss))
+    logging.info('*' * 75)
+    for key, value in metric_dict.items():
+        if key.endswith('metrics'):
+            logging.info('{} prediction at final step'.format(key))
+            log_metrics('Valid', value)
+    logging.info('*' * 75)
+    save_path = save_check_point(model=model, optimizer=optimizer, step='final', loss=final_valid_loss,
+                                 args=args)
+    logging.info('Saving the final mode in {}'.format(save_path))
+    return min_valid_loss, final_valid_loss
 
 def train_step_ir(model, batch, optimizer, args):
     model.train()

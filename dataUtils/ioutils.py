@@ -143,5 +143,3 @@ def load_model(model, PATH: str):
         checkpoint = torch.load(PATH)
     model.load_state_dict(checkpoint['model_state_dict'])
     return model
-
-
