@@ -35,6 +35,13 @@ def trainer_builder(args):
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     train_data_loader, dev_data_loader = prepare_data(model=hotpotQA_model, args=args)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    args.total_steps = (
+            (len(train_data_loader.dataset) // args.train_batch_size)
+            // args.accumulate_grad_batches
+            * float(args.max_epochs)
+    )
+    logging.info('Loading data completed')
+    logging.info('Total steps = {}'.format(args.total_steps))
     logging.info('Loading data completed')
     if device_ids is not None:
         hotpotQA_model = DataParallel(hotpotQA_model, device_ids=device_ids)

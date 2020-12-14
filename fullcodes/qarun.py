@@ -3,47 +3,51 @@ import sys
 PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
-from fullcodes.hyperparaSettings import parse_args
+from ircodes.irhyperparaSettings import parse_args
 from dataUtils.ioutils import create_dir_if_not_exist, set_logger
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
 from hotpotQAModel.FullQAModel import LongformerHotPotQAModel
-from pytorch_lightning import loggers as pl_loggers
+from modelTrain.GoldQATrainFunction import configure_optimizers, training_epoch_qa
 import logging
 import torch
+from torch.utils.data import DataLoader
 from modelUtils.gpu_utils import gpu_setting
+from dataUtils.fullHotpotQADataSet import HotpotTrainDataset, HotpotDevDataset, HotpotTestDataset
+from dataUtils.ioutils import loadJSONData
+from torch.nn import DataParallel
+from time import time
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 def trainer_builder(args):
-    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    logging.info("PyTorch Lighting Trainer constructing...")
-    tb_logger = pl_loggers.TensorBoardLogger(save_dir=args.log_path, name=args.log_name + '_log')
-    ####################################################################################################################
-    checkpoint_callback = ModelCheckpoint(monitor='valid_loss',
-                                          dirpath=args.checkpoint_path,
-                                          filename='full_doc_hotpotQA-{epoch:02d}-{val_loss:4f}')
-    ####################################################################################################################
+    logging.info("Trainer constructing...")
     if args.gpus > 0:
         gpu_list_str = args.gpu_list
         gpu_ids = [int(x) for x in gpu_list_str.split(',')]
-        trainer = pl.Trainer(logger=tb_logger,
-                             gradient_clip_val=args.grad_clip_value,
-                             gpus=gpu_ids,
-                             callbacks=[checkpoint_callback],
-                             val_check_interval=args.val_check_interval,
-                             accumulate_grad_batches=args.accumulate_grad_batches,
-                             accelerator=args.accelerator,
-                             precision=args.precision,
-                             num_nodes=1,
-                             log_every_n_steps=args.log_steps,
-                             max_epochs=args.max_epochs)
+        device = torch.device("cuda:%d" % gpu_ids[0])
+        device_ids = gpu_ids
     else:
-        trainer = pl.Trainer(logger=tb_logger,
-                             gradient_clip_val=args.grad_clip_value,
-                             val_check_interval=args.val_check_interval,
-                             accumulate_grad_batches=args.accumulate_grad_batches,
-                             log_every_n_steps=args.log_steps,
-                             max_epochs=args.max_epochs)
-    return trainer
+        device = torch.device("cuda:0")
+        device_ids = None
+        logging.info('Single GPU setting')
+    fix_encoder = args.frozen_layer_num == 12
+    hotpotQA_model = LongformerHotPotQAModel(args=args, fix_encoder=fix_encoder).to(device)
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    logging.info('Building reasoning module completed')
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    train_data_loader, dev_data_loader = prepare_data(model=hotpotQA_model, args=args)
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    args.total_steps = (
+            (len(train_data_loader.dataset) // args.train_batch_size)
+            // args.accumulate_grad_batches
+            * float(args.max_epochs)
+    )
+    logging.info('Loading data completed')
+    logging.info('Total steps = {}'.format(args.total_steps))
+    logging.info('Loading data completed')
+    if device_ids is not None:
+        hotpotQA_model = DataParallel(hotpotQA_model, device_ids=device_ids)
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    optimizer, scheduler = configure_optimizers(model=hotpotQA_model, args=args)
+    return hotpotQA_model, train_data_loader, dev_data_loader, optimizer, scheduler
 
 def logger_builder(args):
     if args.checkpoint_path is not None:
@@ -64,12 +68,42 @@ def logger_builder(args):
             args.gpu_list = gpu_list_str
             logging.info('gpu list = {}'.format(gpu_list_str))
 
+def prepare_data(model, args):
+    logging.info('Data preparing...')
+    train_data_frame = loadJSONData(PATH=args.data_path, json_fileName=args.train_data_name)
+    train_data_frame['e_id'] = range(0, train_data_frame.shape[0])
+    train_data = HotpotTrainDataset(data_frame=train_data_frame, tokenizer=model.tokenizer, max_doc_num=args.max_doc_num)
+    dev_data_frame = loadJSONData(PATH=args.data_path, json_fileName=args.valid_data_name)
+    dev_data_frame['e_id'] = range(0, dev_data_frame.shape[0])
+    dev_data = HotpotDevDataset(data_frame=dev_data_frame, tokenizer=model.tokenizer, max_doc_num=args.max_doc_num)
+
+    train_data_loader, dev_data_loader = train_dataloader(train_data=train_data, args=args), val_dataloader(dev_data=dev_data, args=args)
+    return train_data_loader, dev_data_loader
+
+def train_dataloader(train_data, args) -> DataLoader:
+    dataloader = DataLoader(dataset=train_data, batch_size=args.train_batch_size,
+        shuffle=True,
+        drop_last=True,
+        pin_memory=True,
+        num_workers=max(1, args.cpu_num // 2),
+        collate_fn=HotpotTrainDataset.collate_fn)
+    return dataloader
+
+def val_dataloader(dev_data, args) -> DataLoader:
+    dataloader = DataLoader(
+        dataset=dev_data,
+        batch_size=args.test_batch_size,
+        shuffle=False,
+        num_workers=max(1, args.cpu_num // 2),
+        collate_fn=HotpotDevDataset.collate_fn
+    )
+    return dataloader
+
 def main(args):
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     pl.seed_everything(seed=args.rand_seed)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     logging.info('*' * 75)
-    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     abs_orig_data_path = os.path.abspath(args.orig_data_path)
     abs_data_path = os.path.abspath(args.data_path)
@@ -87,10 +121,7 @@ def main(args):
     args.checkpoint_path = abs_checkpoint_path
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     logging.info('Building HotPotQA reasoning module...')
-    hotpotQA_model = LongformerHotPotQAModel(args=args)
-    logging.info('Building reasoning module completed')
-    hotpotQA_model.prepare_data()
-    hotpotQA_model.setup(stage='fit')
+    hotpotQA_model, train_data_loader, dev_data_loader, optimizer, scheduler = trainer_builder(args=args)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     logging.info('Model Parameter Configuration:')
     for name, param in hotpotQA_model.named_parameters():
@@ -101,10 +132,14 @@ def main(args):
     for key, value in vars(args).items():
         logging.info('Hype-parameter\t{} = {}'.format(key, value))
     logging.info('*' * 75)
-    ####################################################################################################################
-    trainer = trainer_builder(args=args)
-    ####################################################################################################################
-    return trainer, hotpotQA_model
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    logging.info('Start training...')
+    start_time = time()
+    min_val_loss, final_val_loss = training_epoch_qa(model=hotpotQA_model, optimizer=optimizer, dev_dataloader=dev_data_loader,
+                    train_dataloader=train_data_loader, scheduler=scheduler, args=args)
+    logging.info('Completed training in {:.4f} seconds'.format(time() - start_time))
+    logging.info('Min val loss {}, final val loss{}'.format(min_val_loss, final_val_loss))
+    ##++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 if __name__ == '__main__':
     ####################################################################################################################
@@ -114,6 +149,5 @@ if __name__ == '__main__':
     ####################################################################################################################
     logger_builder(args=args)
     ####################################################################################################################
-    trainer, hotpotQA_model = main(args=args)
-    trainer.fit(model=hotpotQA_model)
+    main(args=args)
     ####################################################################################################################

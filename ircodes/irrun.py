@@ -24,10 +24,11 @@ def trainer_builder(args):
         gpu_ids = [int(x) for x in gpu_list_str.split(',')]
         device = torch.device("cuda:%d" % gpu_ids[0])
         device_ids = gpu_ids
+        logging.info('GPU setting')
     else:
-        device = torch.device("cuda:0")
+        device = torch.device("cpu")
         device_ids = None
-        logging.info('Single GPU setting')
+        logging.info('CPU setting')
     fix_encoder = args.frozen_layer_num == 12
     hotpotIR_model = LongformerDocRetrievalModel(args=args, fix_encoder=fix_encoder).to(device)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -35,7 +36,13 @@ def trainer_builder(args):
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     train_data_loader, dev_data_loader = prepare_data(model=hotpotIR_model, args=args)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    args.total_steps = (
+            (len(train_data_loader.dataset) // args.train_batch_size)
+            // args.accumulate_grad_batches
+            * float(args.max_epochs)
+    )
     logging.info('Loading data completed')
+    logging.info('Total steps = {}'.format(args.total_steps))
     if device_ids is not None:
         hotpotIR_model = DataParallel(hotpotIR_model, device_ids=device_ids)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
