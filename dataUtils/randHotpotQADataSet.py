@@ -48,20 +48,23 @@ class HotpotTrainDataset(Dataset): ##for training data loader
         ####
         cat_doc_encodes = concat_ctx_array.tolist()
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.LongTensor(global_attn_marker.tolist())
-        ctx_marker_mask = torch.LongTensor(answer_mask_idxs.tolist())
-        ctx_marker_mask = ctx_marker_mask.type(torch.bool)
-
+        cat_doc_global_attn_mask = global_attn_marker.tolist()
+        ctx_marker_mask = answer_mask_idxs.tolist()
         ctx_token2sent_map = token2sentID_map.tolist()
         assert concat_len == len(cat_doc_encodes)
+
         if concat_len < self.max_token_num:
             token_pad_num = self.max_token_num - concat_len
             cat_doc_encodes = cat_doc_encodes + [self.pad_token_id] * token_pad_num
             cat_doc_attention_mask = cat_doc_attention_mask + [0] * token_pad_num
             ctx_token2sent_map = ctx_token2sent_map + [0] * token_pad_num
+            cat_doc_global_attn_mask = cat_doc_global_attn_mask + [0] * token_pad_num
+            ctx_marker_mask = ctx_marker_mask + [0] + token_pad_num
         cat_doc_encodes = torch.LongTensor(cat_doc_encodes)
         cat_doc_attention_mask = torch.LongTensor(cat_doc_attention_mask)
         ctx_token2sent_map = torch.LongTensor(ctx_token2sent_map)
+        cat_doc_global_attn_mask = torch.LongTensor(cat_doc_global_attn_mask)
+        ctx_marker_mask = torch.BoolTensor(ctx_marker_mask)
         ################################################################################################################
         doc_start_idxes = doc_start_position.tolist()
         doc_end_idxes = doc_end_position.tolist()
@@ -227,20 +230,23 @@ class HotpotDevDataset(Dataset): ##for dev dataloader
         ####
         cat_doc_encodes = concat_ctx_array.tolist()
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.LongTensor(global_attn_marker.tolist())
-        ctx_marker_mask = torch.LongTensor(answer_mask_idxs.tolist())
-        ctx_marker_mask = ctx_marker_mask.type(torch.bool)
-
+        cat_doc_global_attn_mask = global_attn_marker.tolist()
+        ctx_marker_mask = answer_mask_idxs.tolist()
         ctx_token2sent_map = token2sentID_map.tolist()
         assert concat_len == len(cat_doc_encodes)
+
         if concat_len < self.max_token_num:
             token_pad_num = self.max_token_num - concat_len
             cat_doc_encodes = cat_doc_encodes + [self.pad_token_id] * token_pad_num
             cat_doc_attention_mask = cat_doc_attention_mask + [0] * token_pad_num
             ctx_token2sent_map = ctx_token2sent_map + [0] * token_pad_num
+            cat_doc_global_attn_mask = cat_doc_global_attn_mask + [0] * token_pad_num
+            ctx_marker_mask = ctx_marker_mask + [0] + token_pad_num
         cat_doc_encodes = torch.LongTensor(cat_doc_encodes)
         cat_doc_attention_mask = torch.LongTensor(cat_doc_attention_mask)
         ctx_token2sent_map = torch.LongTensor(ctx_token2sent_map)
+        cat_doc_global_attn_mask = torch.LongTensor(cat_doc_global_attn_mask)
+        ctx_marker_mask = torch.BoolTensor(ctx_marker_mask)
         ################################################################################################################
         doc_start_idxes = doc_start_position.tolist()
         doc_end_idxes = doc_end_position.tolist()
@@ -388,20 +394,23 @@ class HotpotTestDataset(Dataset): ##for dev dataloader
         ####
         cat_doc_encodes = concat_ctx_array.tolist()
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.LongTensor(global_attn_marker.tolist())
-        ctx_marker_mask = torch.LongTensor(answer_mask_idxs.tolist())
-        ctx_marker_mask = ctx_marker_mask.type(torch.bool)
-
-        ctx_token2sent_map = token2sentID_map
+        cat_doc_global_attn_mask = global_attn_marker.tolist()
+        ctx_marker_mask = answer_mask_idxs.tolist()
+        ctx_token2sent_map = token2sentID_map.tolist()
         assert concat_len == len(cat_doc_encodes)
+
         if concat_len < self.max_token_num:
             token_pad_num = self.max_token_num - concat_len
             cat_doc_encodes = cat_doc_encodes + [self.pad_token_id] * token_pad_num
             cat_doc_attention_mask = cat_doc_attention_mask + [0] * token_pad_num
             ctx_token2sent_map = ctx_token2sent_map + [0] * token_pad_num
+            cat_doc_global_attn_mask = cat_doc_global_attn_mask + [0] * token_pad_num
+            ctx_marker_mask = ctx_marker_mask + [0] + token_pad_num
         cat_doc_encodes = torch.LongTensor(cat_doc_encodes)
         cat_doc_attention_mask = torch.LongTensor(cat_doc_attention_mask)
         ctx_token2sent_map = torch.LongTensor(ctx_token2sent_map)
+        cat_doc_global_attn_mask = torch.LongTensor(cat_doc_global_attn_mask)
+        ctx_marker_mask = torch.BoolTensor(ctx_marker_mask)
         ################################################################################################################
         doc_start_idxes = doc_start_position
         doc_end_idxes = doc_end_position
