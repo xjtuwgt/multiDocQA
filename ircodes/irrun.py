@@ -47,7 +47,7 @@ def trainer_builder(args):
         hotpotIR_model = DataParallel(hotpotIR_model, device_ids=device_ids)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     optimizer, scheduler = configure_optimizers(model=hotpotIR_model, args=args)
-    return hotpotIR_model, train_data_loader, dev_data_loader, optimizer, scheduler
+    return hotpotIR_model, train_data_loader, dev_data_loader, optimizer[0], scheduler[0]
 
 def logger_builder(args):
     if args.checkpoint_path is not None:

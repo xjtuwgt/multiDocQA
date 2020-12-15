@@ -32,7 +32,7 @@ def configure_optimizers(model, args):
     return [optimizer], [scheduler]
 
 def training_ir_warm_up(model, optimizer, train_dataloader, dev_dataloader, args):
-    warm_up_steps = args.warm_up_steps
+    warm_up_steps = args.warmup_steps
     start_time = time()
     step = 0
     training_logs = []
@@ -71,7 +71,7 @@ def training_ir_warm_up(model, optimizer, train_dataloader, dev_dataloader, args
         logging.info('*' * 75)
 
 def training_epoch_ir(model, optimizer, scheduler, train_dataloader, dev_dataloader, args):
-    warm_up_steps = args.warm_up_steps
+    warm_up_steps = args.warmup_steps
     if warm_up_steps > 0:
         training_ir_warm_up(model=model, optimizer=optimizer, train_dataloader=train_dataloader, dev_dataloader=dev_dataloader, args=args)
         logging.info('*' * 75)
