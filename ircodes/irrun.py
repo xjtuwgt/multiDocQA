@@ -24,7 +24,7 @@ def trainer_builder(args):
         gpu_ids = [int(x) for x in gpu_list_str.split(',')]
         device = torch.device("cuda:%d" % gpu_ids[0])
         device_ids = gpu_ids
-        logging.info('GPU setting')
+        logging.info('GPU setting {} gpu ids {}'.format(device, device_ids))
         args.cuda = True
     else:
         device = torch.device("cpu")
