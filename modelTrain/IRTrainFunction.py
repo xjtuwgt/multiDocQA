@@ -177,6 +177,7 @@ def validation_epoch_ir(model, test_data_loader, args):
     topk_metric_logs = []
     loss_out_put = []
     with torch.no_grad():
+
         for batch_idx, batch in enumerate(test_data_loader):
             out_put = validation_step_ir(model=model, batch=batch, args=args)
             loss_out_put.append(out_put['valid_loss'])
