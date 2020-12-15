@@ -3,32 +3,35 @@ import logging
 from time import time
 from dataUtils.ioutils import save_check_point
 from hotpotEvaluation.hotpotEvaluationUtils import log_metrics, supp_doc_evaluation
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from transformers import AdamW, get_linear_schedule_with_warmup
 
 def configure_optimizers(model, args):
     "Prepare optimizer and schedule (linear warmup and decay)"
-    no_decay = ["bias", "LayerNorm.weight"]
-    optimizer_grouped_parameters = [
-        {
-            "params": [p for n, p in model.named_parameters() if
-                       (p.requires_grad) and (not any(nd in n for nd in no_decay))],
-            "weight_decay": args.weight_decay,
-        },
-        {
-            "params": [p for n, p in model.named_parameters() if
-                       (p.requires_grad) and (any(nd in n for nd in no_decay))],
-            "weight_decay": 0.0,
-        }
-    ]
-    optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
-    scheduler = get_linear_schedule_with_warmup(
-        optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=args.total_steps
-    )
-    scheduler = {
-        'scheduler': scheduler,
-        'interval': 'step',
-        'frequency': 1
-    }
+    # no_decay = ["bias", "LayerNorm.weight"]
+    # optimizer_grouped_parameters = [
+    #     {
+    #         "params": [p for n, p in model.named_parameters() if
+    #                    (p.requires_grad) and (not any(nd in n for nd in no_decay))],
+    #         "weight_decay": args.weight_decay,
+    #     },
+    #     {
+    #         "params": [p for n, p in model.named_parameters() if
+    #                    (p.requires_grad) and (any(nd in n for nd in no_decay))],
+    #         "weight_decay": 0.0,
+    #     }
+    # ]
+    # optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
+    # scheduler = get_linear_schedule_with_warmup(
+    #     optimizer, num_warmup_steps=args.warmup_steps, num_training_steps=args.total_steps
+    # )
+    # scheduler = {
+    #     'scheduler': scheduler,
+    #     'interval': 'step',
+    #     'frequency': 1
+    # }
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
+    scheduler = CosineAnnealingLR(optimizer=optimizer, T_max=args.max_steps, eta_min=1e-12)
     return [optimizer], [scheduler]
 
 def training_ir_warm_up(model, optimizer, train_dataloader, dev_dataloader, args):
@@ -80,6 +83,7 @@ def training_epoch_ir(model, optimizer, scheduler, train_dataloader, dev_dataloa
         optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=args.weight_decay)
         logging.info('Update learning rate from {} to {}'.format(current_learning_rate, learning_rate))
 
+    scheduler = CosineAnnealingLR(optimizer=optimizer, T_max=args.max_steps, eta_min=1e-12)
     start_time = time()
     train_loss = 0.0
     min_valid_loss = 1e9
