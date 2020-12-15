@@ -59,7 +59,7 @@ class HotpotTrainDataset(Dataset): ##for training data loader
             cat_doc_attention_mask = cat_doc_attention_mask + [0] * token_pad_num
             ctx_token2sent_map = ctx_token2sent_map + [0] * token_pad_num
             cat_doc_global_attn_mask = cat_doc_global_attn_mask + [0] * token_pad_num
-            ctx_marker_mask = ctx_marker_mask + [0] + token_pad_num
+            ctx_marker_mask = ctx_marker_mask + [0] * token_pad_num
         cat_doc_encodes = torch.LongTensor(cat_doc_encodes)
         cat_doc_attention_mask = torch.LongTensor(cat_doc_attention_mask)
         ctx_token2sent_map = torch.LongTensor(ctx_token2sent_map)
@@ -241,7 +241,7 @@ class HotpotDevDataset(Dataset): ##for dev dataloader
             cat_doc_attention_mask = cat_doc_attention_mask + [0] * token_pad_num
             ctx_token2sent_map = ctx_token2sent_map + [0] * token_pad_num
             cat_doc_global_attn_mask = cat_doc_global_attn_mask + [0] * token_pad_num
-            ctx_marker_mask = ctx_marker_mask + [0] + token_pad_num
+            ctx_marker_mask = ctx_marker_mask + [0] * token_pad_num
         cat_doc_encodes = torch.LongTensor(cat_doc_encodes)
         cat_doc_attention_mask = torch.LongTensor(cat_doc_attention_mask)
         ctx_token2sent_map = torch.LongTensor(ctx_token2sent_map)
@@ -405,7 +405,7 @@ class HotpotTestDataset(Dataset): ##for dev dataloader
             cat_doc_attention_mask = cat_doc_attention_mask + [0] * token_pad_num
             ctx_token2sent_map = ctx_token2sent_map + [0] * token_pad_num
             cat_doc_global_attn_mask = cat_doc_global_attn_mask + [0] * token_pad_num
-            ctx_marker_mask = ctx_marker_mask + [0] + token_pad_num
+            ctx_marker_mask = ctx_marker_mask + [0] * token_pad_num
         cat_doc_encodes = torch.LongTensor(cat_doc_encodes)
         cat_doc_attention_mask = torch.LongTensor(cat_doc_attention_mask)
         ctx_token2sent_map = torch.LongTensor(ctx_token2sent_map)
