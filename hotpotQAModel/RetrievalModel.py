@@ -199,10 +199,17 @@ class LongformerDocRetrievalModel(pl.LightningModule):
                                                           global_attention_mask=global_attn_mask)
         return sequence_output
     ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    def forward(self, sample):
+    def seq_encoder(self, sample):
         ctx_encode_ids, ctx_attn_mask, ctx_global_attn_mask = sample['ctx_encode'], sample['ctx_attn_mask'], sample['ctx_global_mask']
         sequence_output = self.get_representation(self.longformer, ctx_encode_ids, ctx_attn_mask, ctx_global_attn_mask, self.fix_encoder)
         return sequence_output
+    def forward(self, sample):
+        output_score = self.score_computation(sample=sample)
+        loss_out_put = self.multi_loss_computation(output_scores=output_score, sample=sample)
+        if self.training:
+            return loss_out_put
+        else:
+            return loss_out_put, output_score
     ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     def supp_doc_prediction(self, doc_embed: T):
         doc_score = self.doc_mlp.forward(doc_embed).squeeze(dim=-1)
@@ -223,7 +230,7 @@ class LongformerDocRetrievalModel(pl.LightningModule):
         return {'doc_loss': supp_doc_loss_score}
     ####################################################################################################################
     def score_computation(self, sample):
-        sequence_output = self.forward(sample=sample)
+        sequence_output = self.seq_encoder(sample=sample)
         # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         doc_start_positions, doc_end_positions = sample['doc_start'], sample['doc_end']
         batch_size, doc_num = doc_start_positions.shape

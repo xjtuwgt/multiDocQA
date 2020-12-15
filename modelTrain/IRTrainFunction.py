@@ -153,8 +153,7 @@ def train_step_ir(model, batch, optimizer, args):
             sample[key] = value.cuda()
     else:
         sample = batch
-    output_scores = model.score_computation(sample=sample)
-    loss_res = model.multi_loss_computation(sample=sample, output_scores=output_scores)
+    loss_res = model(sample=sample)
     supp_doc_loss = loss_res['doc_loss']
     loss = supp_doc_loss
     loss.mean().backward()
@@ -199,9 +198,7 @@ def validation_step_ir(model, batch, args):
             sample[key] = value.cuda()
     else:
         sample = batch
-    output_scores = model.score_computation(sample=sample)
-    loss_res = model.multi_loss_computation(sample=sample, output_scores=output_scores)
-
+    loss_res, output_scores = model(sample=sample)
     supp_doc_loss = loss_res['doc_loss']
     loss = supp_doc_loss
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
