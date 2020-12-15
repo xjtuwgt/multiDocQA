@@ -121,11 +121,11 @@ def Hotpot_Train_Dev_Data_Preprocess(data: DataFrame, tokenizer: LongformerToken
                                                                               span_flag=span_flag)
         doc_labels, doc_ans_labels, doc_num, doc_len_array, doc_start_position, doc_end_position, doc_head_idx, doc_tail_idx = doc_infor
         sent_labels, sent_ans_labels, sent_num, sent_len_array, sent_start_position, sent_end_position, sent2doc_map_array, abs_sentIndoc_array, doc_sent_nums = sent_infor
-        concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask_idxs = seq_infor
+        concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask = seq_infor
         answer_pos_start, answer_pos_end, answer_pos_tuple = answer_infor
         return doc_labels, doc_ans_labels, doc_num, doc_len_array, doc_start_position, doc_end_position, doc_head_idx, doc_tail_idx, \
                sent_labels, sent_ans_labels, sent_num, sent_len_array, sent_start_position, sent_end_position, sent2doc_map_array, abs_sentIndoc_array, doc_sent_nums, \
-               concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask_idxs, \
+               concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask, \
                answer_pos_start, answer_pos_end, answer_pos_tuple, answer_type_label
     start_time = time()
     comb_res_col_names = ['doc_label', 'doc_ans_label', 'doc_num', 'doc_len', 'doc_start', 'doc_end', 'head_idx', 'tail_idx',
@@ -181,10 +181,10 @@ def Hotpot_Test_Data_PreProcess(data: DataFrame, tokenizer: LongformerTokenizer)
                                                                               context_tuple_list=ctx_encode)
         doc_num, doc_len_array, doc_start_position, doc_end_position = doc_infor
         sent_num, sent_len_array, sent_start_position, sent_end_position, sent2doc_map_array, abs_sentIndoc_array, doc_sent_nums = sent_infor
-        concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask_idxs = seq_infor
+        concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask = seq_infor
         return doc_num, doc_len_array, doc_start_position, doc_end_position, \
                sent_num, sent_len_array, sent_start_position, sent_end_position, sent2doc_map_array, abs_sentIndoc_array, doc_sent_nums, \
-               concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask_idxs
+               concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask
     start_time = time()
     comb_res_col_names = ['doc_num', 'doc_len', 'doc_start', 'doc_end',
                           'sent_num', 'sent_len', 'sent_start', 'sent_end', 'sent2doc', 'sentIndoc', 'doc_sent_num',
