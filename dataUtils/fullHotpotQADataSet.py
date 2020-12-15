@@ -27,10 +27,8 @@ class HotpotTrainDataset(Dataset): ##for training data loader
         ####
         cat_doc_encodes = example['ctx_encode']
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        cat_doc_global_attn_mask[example['global_attn']] = 1
-        ctx_marker_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        ctx_marker_mask[example['ans_mask']] = 1
+        cat_doc_global_attn_mask = torch.LongTensor(example['global_attn'])
+        ctx_marker_mask = torch.LongTensor(example['ans_mask'])
         ctx_marker_mask = ctx_marker_mask.type(torch.bool)
 
         ctx_token2sent_map = example['token2sent']
@@ -192,10 +190,8 @@ class HotpotDevDataset(Dataset): ##for dev dataloader
         ####
         cat_doc_encodes = example['ctx_encode']
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        cat_doc_global_attn_mask[example['global_attn']] = 1
-        ctx_marker_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        ctx_marker_mask[example['ans_mask']] = 1
+        cat_doc_global_attn_mask = torch.LongTensor(example['global_attn'])
+        ctx_marker_mask = torch.LongTensor(example['ans_mask'])
         ctx_marker_mask = ctx_marker_mask.type(torch.bool)
 
         ctx_token2sent_map = example['token2sent']
@@ -349,10 +345,8 @@ class HotpotTestDataset(Dataset): ##for dev dataloader
         ####
         cat_doc_encodes = example['ctx_encode']
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        cat_doc_global_attn_mask[example['global_attn']] = 1
-        ctx_marker_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        ctx_marker_mask[example['ans_mask']] = 1
+        cat_doc_global_attn_mask = torch.LongTensor(example['global_attn'])
+        ctx_marker_mask = torch.LongTensor(example['ans_mask'])
         ctx_marker_mask = ctx_marker_mask.type(torch.bool)
 
         ctx_token2sent_map = example['token2sent']

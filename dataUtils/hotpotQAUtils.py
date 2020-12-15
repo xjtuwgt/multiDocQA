@@ -231,7 +231,6 @@ def context_merge_longer(query_encode_ids, context_tuple_list, span_flag):
     abs_sentIndoc_idx_list = []  ## length is equal to sent numbers
     ################################################################################################################
     supp_sent_labels_list = []  # equal to number of sentences
-    supp_sent_labels_ans_list = []
     answer_position_list = []
     previous_len = query_len
     previous_sent_num = 0
@@ -349,10 +348,6 @@ def context_merge_longer(query_encode_ids, context_tuple_list, span_flag):
     sent_start_position = np.array([_[0] for _ in sent_start_end_pair_list]).astype('int')
     sent_end_position = np.array([_[1] for _ in sent_start_end_pair_list]).astype('int')
     ################################################################################################################
-    # doc  infor: doc_labels, doc_num, doc_len_array, doc_start_position, doc_end_position
-    # sent infor: sent_labels, sent_num, sent_len_array, sent_start_position, sent_end_position, sent2doc_map_array, abs_sentIndoc_array
-    # ans  infor: answer_pos_start, answer_pos_end
-    # sequence infor: concat_ctx_array, ctx_attn_mask, global_attn_marker, token2sentID_map, answer_mask_idxs
     ################################################################################################################
     doc_sent_nums = np.array(sent_num_in_docs).astype('int')
     ################################################################################################################
@@ -366,7 +361,7 @@ def context_merge_longer(query_encode_ids, context_tuple_list, span_flag):
     ################################################################################################################
     doc_infor_tuple = (doc_labels, doc_ans_labels, doc_num, doc_len_array, doc_start_position, doc_end_position, doc_head_idx, doc_tail_idx)
     sent_infor_tuple = (sent_labels, sent_ans_labels, sent_num, sent_len_array, sent_start_position, sent_end_position, sent2doc_map_array, abs_sentIndoc_array, doc_sent_nums)
-    token_infor_tuple = (concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask_idxs)
+    token_infor_tuple = (concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask)
     answer_infor_tuple = (answer_pos_start, answer_pos_end, answer_position_tuple)
     ################################################################################################################
     return doc_infor_tuple, sent_infor_tuple, token_infor_tuple, answer_infor_tuple
@@ -464,7 +459,7 @@ def test_context_merge_longer(query_encode_ids, context_tuple_list):
     ################################################################################################################
     doc_infor_tuple = (doc_num, doc_len_array, doc_start_position, doc_end_position)
     sent_infor_tuple = (sent_num, sent_len_array, sent_start_position, sent_end_position, sent2doc_map_array, abs_sentIndoc_array, doc_sent_nums)
-    token_infor_tuple = (concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask_idxs)
+    token_infor_tuple = (concat_ctx_array, token_num, global_attn_marker, token2sentID_map, answer_mask)
     ################################################################################################################
     return doc_infor_tuple, sent_infor_tuple, token_infor_tuple
 

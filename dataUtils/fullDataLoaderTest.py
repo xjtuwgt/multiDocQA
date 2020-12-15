@@ -38,18 +38,20 @@ def get_val_data_loader(data_frame, tokenizer) -> DataLoader:
 
 def consistent_checker():
     tokenizer = get_hotpotqa_longformer_tokenizer()
-    encoded_data = loadJSONData(PATH=distractor_wiki_path, json_fileName=train_processed_data_name)
-    # orig_data_frame, _ = HOTPOT_DevData_Distractor()
-    orig_data_frame, _ = HOTPOT_TrainData()
+    encoded_data = loadJSONData(PATH=distractor_wiki_path, json_fileName=dev_processed_data_name)
+    orig_data_frame, _ = HOTPOT_DevData_Distractor()
+    # orig_data_frame, _ = HOTPOT_TrainData()
     encoded_data['e_id'] = range(0, encoded_data.shape[0])
-    # dev_data_loader = get_val_data_loader(data_frame=encoded_data, tokenizer=tokenizer)
-    dev_data_loader = get_train_data_loader(data_frame=encoded_data, tokenizer=tokenizer)
+    dev_data_loader = get_val_data_loader(data_frame=encoded_data, tokenizer=tokenizer)
+    # dev_data_loader = get_train_data_loader(data_frame=encoded_data, tokenizer=tokenizer)
 
     def answer_checker(row, orig_row):
         ans_start = row['ans_start'][0]
         ans_end = row['ans_end'][0]
         ctx_encode = row['ctx_encode'][0]
         answer = orig_row['answer']
+
+
         print('orig answer: {}\ndeco answer: {}'.format(answer,
                                                                          tokenizer.decode(ctx_encode[ans_start:(ans_end+1)])))
         print('*' * 75)
@@ -62,9 +64,16 @@ def consistent_checker():
         doc_num = doc_label.shape[0]
         pos_doc_idx = (doc_label > 0).nonzero().detach().tolist()
         supp_docs = orig_row['supporting_facts']
+        global_attn = row['ctx_global_mask'][0]
+        global_attn_mask_idxes = (global_attn == 1).nonzero(as_tuple=False).squeeze()
+        print(global_attn_mask_idxes)
+
+        print('global attn = {}'.format(global_attn))
+        print(tokenizer.decode(ctx_encode[doc_start]))
 
         for doc_idx in pos_doc_idx:
             print('doc {}'.format(tokenizer.decode(ctx_encode[doc_start[doc_idx]:(doc_end[doc_idx] + 1)])))
+
         print(doc_label, doc_num)
         print('=' * 75)
 

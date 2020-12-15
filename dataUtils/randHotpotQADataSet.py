@@ -48,10 +48,8 @@ class HotpotTrainDataset(Dataset): ##for training data loader
         ####
         cat_doc_encodes = concat_ctx_array.tolist()
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        cat_doc_global_attn_mask[global_attn_marker] = 1
-        ctx_marker_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        ctx_marker_mask[answer_mask_idxs] = 1
+        cat_doc_global_attn_mask = torch.LongTensor(global_attn_marker.tolist())
+        ctx_marker_mask = torch.LongTensor(answer_mask_idxs.tolist())
         ctx_marker_mask = ctx_marker_mask.type(torch.bool)
 
         ctx_token2sent_map = token2sentID_map.tolist()
@@ -229,10 +227,8 @@ class HotpotDevDataset(Dataset): ##for dev dataloader
         ####
         cat_doc_encodes = concat_ctx_array.tolist()
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        cat_doc_global_attn_mask[global_attn_marker] = 1
-        ctx_marker_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        ctx_marker_mask[answer_mask_idxs] = 1
+        cat_doc_global_attn_mask = torch.LongTensor(global_attn_marker.tolist())
+        ctx_marker_mask = torch.LongTensor(answer_mask_idxs.tolist())
         ctx_marker_mask = ctx_marker_mask.type(torch.bool)
 
         ctx_token2sent_map = token2sentID_map.tolist()
@@ -390,12 +386,10 @@ class HotpotTestDataset(Dataset): ##for dev dataloader
         concat_sent_num = sent_num
         concat_len = token_num
         ####
-        cat_doc_encodes = token_num
+        cat_doc_encodes = concat_ctx_array.tolist()
         cat_doc_attention_mask = [1] * concat_len
-        cat_doc_global_attn_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        cat_doc_global_attn_mask[global_attn_marker] = 1
-        ctx_marker_mask = torch.zeros(self.max_token_num, dtype=torch.long)
-        ctx_marker_mask[answer_mask_idxs] = 1
+        cat_doc_global_attn_mask = torch.LongTensor(global_attn_marker.tolist())
+        ctx_marker_mask = torch.LongTensor(answer_mask_idxs.tolist())
         ctx_marker_mask = ctx_marker_mask.type(torch.bool)
 
         ctx_token2sent_map = token2sentID_map
