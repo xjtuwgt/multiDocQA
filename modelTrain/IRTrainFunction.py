@@ -1,6 +1,7 @@
 import torch
 import logging
 from time import time
+from tqdm import tqdm
 from dataUtils.ioutils import save_check_point
 from hotpotEvaluation.hotpotEvaluationUtils import log_metrics, supp_doc_evaluation
 from transformers import AdamW, get_linear_schedule_with_warmup
@@ -85,8 +86,11 @@ def training_epoch_ir(model, optimizer, scheduler, train_dataloader, dev_dataloa
     min_valid_loss = 1e9
     step = 0
     training_logs = []
+
     for epoch in range(1, args.epoch + 1):
-        for batch_idx, batch in enumerate(train_dataloader):
+        tk0 = tqdm(train_dataloader, total=int(len(train_dataloader)))
+        # for batch_idx, batch in enumerate(train_dataloader):
+        for batch_idx, batch in enumerate(tk0):
             log = train_step_ir(model=model, optimizer=optimizer, batch=batch, args=args)
             # ##+++++++++++++++++++++++++++++++++++++++++++++++
             scheduler.step()
