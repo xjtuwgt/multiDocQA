@@ -31,7 +31,7 @@ def configure_optimizers(model, args):
     #     'frequency': 1
     # }
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
-    scheduler = CosineAnnealingLR(optimizer=optimizer, T_max=args.max_steps, eta_min=1e-12)
+    scheduler = CosineAnnealingLR(optimizer=optimizer, T_max=args.total_steps, eta_min=1e-12)
     return [optimizer], [scheduler]
 
 def training_ir_warm_up(model, optimizer, train_dataloader, dev_dataloader, args):
@@ -83,7 +83,7 @@ def training_epoch_ir(model, optimizer, scheduler, train_dataloader, dev_dataloa
         optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=args.weight_decay)
         logging.info('Update learning rate from {} to {}'.format(current_learning_rate, learning_rate))
 
-    scheduler = CosineAnnealingLR(optimizer=optimizer, T_max=args.max_steps, eta_min=1e-12)
+    scheduler = CosineAnnealingLR(optimizer=optimizer, T_max=args.total_steps, eta_min=1e-12)
     start_time = time()
     train_loss = 0.0
     min_valid_loss = 1e9

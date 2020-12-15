@@ -53,7 +53,7 @@ def parse_args(args=None):
     parser.add_argument('-log', '--log_path', default='../ir_hotpot_logs', type=str)
     parser.add_argument('--log_name', default='IRHotPotQALog', type=str)
     ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    parser.add_argument('--accumulate_grad_batches', default=2, type=int)
+    parser.add_argument('--accumulate_grad_batches', default=1, type=int)
     parser.add_argument('--train_batch_size', default=8, type=int)
     parser.add_argument('--max_epochs', default=6, type=int)
     if torch.cuda.is_available():
