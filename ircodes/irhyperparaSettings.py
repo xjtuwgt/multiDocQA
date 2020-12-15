@@ -54,7 +54,7 @@ def parse_args(args=None):
     parser.add_argument('--log_name', default='IRHotPotQALog', type=str)
     ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     parser.add_argument('--accumulate_grad_batches', default=2, type=int)
-    parser.add_argument('--train_batch_size', default=2, type=int)
+    parser.add_argument('--train_batch_size', default=8, type=int)
     parser.add_argument('--max_epochs', default=6, type=int)
     if torch.cuda.is_available():
         parser.add_argument('--gpus', default=4, type=int)
@@ -73,7 +73,7 @@ def parse_args(args=None):
     parser.add_argument('--save_checkpoint_steps', default=10000, type=int)
     parser.add_argument('--val_check_interval', default=0.25, type=float) ##check every 0.1 epoch
     parser.add_argument('--log_steps', default=50, type=int, help='train log every xx steps')
-    parser.add_argument('--test_batch_size', default=8, type=int, help='valid/test batch size')
+    parser.add_argument('--test_batch_size', default=16, type=int, help='valid/test batch size')
     parser.add_argument('--rand_seed', default=42, type=int, help='random seed')
     ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     return parser.parse_args(args)
