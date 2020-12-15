@@ -63,7 +63,7 @@ def parse_args(args=None):
     parser.add_argument('--gpu_list', default=None, type=str)##'0,1,2,3'
     parser.add_argument('--warmup_steps', default=2000, type=int)
     parser.add_argument('--total_steps', default=-1, type=int)
-    parser.add_argument('--accelerator', default='ddp', type=str)
+    parser.add_argument('--accelerator', default='dp', type=str)
     parser.add_argument('--precision', default=32, type=int) ## 16, 32
     ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     parser.add_argument('--weight_decay', default=1e-5, type=float)
