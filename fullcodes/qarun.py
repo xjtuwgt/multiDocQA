@@ -24,10 +24,12 @@ def trainer_builder(args):
         gpu_ids = [int(x) for x in gpu_list_str.split(',')]
         device = torch.device("cuda:%d" % gpu_ids[0])
         device_ids = gpu_ids
+        args.cuda = True
     else:
-        device = torch.device("cuda:0")
+        device = torch.device("cpu")
         device_ids = None
         logging.info('Single GPU setting')
+        args.cuda = False
     fix_encoder = args.frozen_layer_num == 12
     hotpotQA_model = LongformerHotPotQAModel(args=args, fix_encoder=fix_encoder).to(device)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

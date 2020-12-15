@@ -8,6 +8,7 @@ def parse_args(args=None):
     parser.add_argument('--do_train', default=True, action='store_true')
     parser.add_argument('--do_valid', default=True, action='store_true')
     parser.add_argument('--do_test', action='store_true')
+    parser.add_argument('--cuda', default=False, action='store_true')
     ##++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     parser.add_argument('--orig_data_path', type=str, default='../data/hotpotqa')
     parser.add_argument('--orig_dev_data_name', type=str, default='gold_hotpot_dev_distractor_v1.json')

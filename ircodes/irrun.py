@@ -25,10 +25,12 @@ def trainer_builder(args):
         device = torch.device("cuda:%d" % gpu_ids[0])
         device_ids = gpu_ids
         logging.info('GPU setting')
+        args.cuda = True
     else:
         device = torch.device("cpu")
         device_ids = None
         logging.info('CPU setting')
+        args.cuda = False
     fix_encoder = args.frozen_layer_num == 12
     hotpotIR_model = LongformerDocRetrievalModel(args=args, fix_encoder=fix_encoder).to(device)
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
